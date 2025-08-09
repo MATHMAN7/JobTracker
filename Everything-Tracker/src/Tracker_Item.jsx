@@ -3,16 +3,16 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function Tracker_item({ text, index, deleteTask }) {
+function Tracker_item({ text: task, deleteTask, updateTask }) {
     const [isEditing, setIsEditing] = useState(false);
 
-    const [title, setTitle] = useState(text.title || "");
-    const [company, setCompany] = useState("");
-    const [date, setDate] = useState(null);
-    const [deadline, setDeadline] = useState(null);
-    const [link, setLink] = useState("");
-    const [selected, setSelected] = useState(null);
-    const [Statusindex, setStatusIndex] = useState(0);
+    const [title, setTitle] = useState(task.title || "");
+    const [company, setCompany] = useState(task.company || "");
+    const [date, setDate] = useState(task.date ? new Date(task.date) : null);
+    const [deadline, setDeadline] = useState(task.deadline ? new Date(task.deadline) : null);
+    const [link, setLink] = useState(task.link || "");
+    const [selected, setSelected] = useState(task.selected || null);
+    const [statusIndex, setStatusIndex] = useState(task.statusindex || 0);
 
     const statuses = [
         "Waiting⏳",
@@ -36,17 +36,25 @@ function Tracker_item({ text, index, deleteTask }) {
 
     const handleClick = (value) => {
         if (!isEditing) return;
-        if (selected === value) {
-            setSelected(null);
-        } else {
-            setSelected(value);
-        }
+        setSelected(selected === value ? null : value);
+    };
+
+    const handleSave = () => {
+        setIsEditing(false);
+        updateTask(task.id, {
+            title,
+            company,
+            date: date ? date.toISOString() : null,
+            deadline: deadline ? deadline.toISOString() : null,
+            link,
+            selected,
+            statusindex: statusIndex,
+        });
     };
 
     return (
         <div className="tracker-card">
             <div className="tracker_item">
-
                 {isEditing ? (
                     <input
                         type="text"
@@ -70,43 +78,22 @@ function Tracker_item({ text, index, deleteTask }) {
                     <div className="tracker-company-view">{company || "__________"}</div>
                 )}
 
-
                 <div className="remote">
-                    <div className="remote-option">
-                        <input
-                            id="op1"
-                            className="op1"
-                            type="checkbox"
-                            name="group"
-                            checked={selected === "op1"}
-                            onChange={() => handleClick("op1")}
-                        />
-                        <label htmlFor="op1">In person</label>
-                    </div>
-
-                    <div className="remote-option">
-                        <input
-                            id="op2"
-                            className="op2"
-                            type="checkbox"
-                            name="group"
-                            checked={selected === "op2"}
-                            onChange={() => handleClick("op2")}
-                        />
-                        <label htmlFor="op2">Remote</label>
-                    </div>
-
-                    <div className="remote-option">
-                        <input
-                            id="op3"
-                            className="op3"
-                            type="checkbox"
-                            name="group"
-                            checked={selected === "op3"}
-                            onChange={() => handleClick("op3")}
-                        />
-                        <label htmlFor="op3">Hybrid</label>
-                    </div>
+                    {["op1", "op2", "op3"].map((op, i) => (
+                        <div className="remote-option" key={op}>
+                            <input
+                                id={`${op}-${task.id}`}
+                                className={op}
+                                type="checkbox"
+                                name={`group-${task.id}`}
+                                checked={selected === op}
+                                onChange={() => handleClick(op)}
+                            />
+                            <label htmlFor={`${op}-${task.id}`}>
+                                {op === "op1" ? "In person" : op === "op2" ? "Remote" : "Hybrid"}
+                            </label>
+                        </div>
+                    ))}
                 </div>
 
                 <label className="link">
@@ -118,15 +105,12 @@ function Tracker_item({ text, index, deleteTask }) {
                             onChange={(e) => setLink(e.target.value)}
                             placeholder=" https://example.com"
                         />
+                    ) : link ? (
+                        <a href={link} target="_blank" rel="noopener noreferrer" className="link-view">
+                            {link}
+                        </a>
                     ) : (
-
-                        link ? (
-                            <a href={link} target="_blank" rel="noopener noreferrer" className="link-view">
-                                {link}
-                            </a>
-                        ) : (
-                            <span className="link-view">__________</span>
-                        )
+                        <span className="link-view">__________</span>
                     )}
                 </label>
 
@@ -156,21 +140,36 @@ function Tracker_item({ text, index, deleteTask }) {
             </div>
 
             <div className="status">
-                <button onClick={cycleStatus_Back} disabled={!isEditing}>◀</button>
-                <span className="status2">{statuses[Statusindex]}</span>
-                <button onClick={cycleStatus} disabled={!isEditing}>▶</button>
+                <button onClick={cycleStatus_Back} disabled={!isEditing}>
+                    ◀
+                </button>
+                <span className="status2">{statuses[statusIndex]}</span>
+                <button onClick={cycleStatus} disabled={!isEditing}>
+                    ▶
+                </button>
             </div>
 
             <div className="save-delete">
+                <button
+                    onClick={() => {
+                        if (isEditing) {
+                            handleSave();
+                        } else {
+                            setIsEditing(true);
+                        }
+                    }}
+                    className="edit-button"
+                >
+                    {isEditing ? "Save" : "Edit"}
+                </button>
 
-            <button onClick={() => setIsEditing(prev => !prev)} className="edit-button">
-                {isEditing ? "Save" : "Edit"}
-            </button>
-
-            <button onClick={() => deleteTask(index)} className="delete-button">🗑️ Delete</button>
+                <button onClick={() => deleteTask(task.id)} className="delete-button">
+                    🗑️ Delete
+                </button>
             </div>
         </div>
     );
 }
 
 export default Tracker_item;
+
