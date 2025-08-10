@@ -59,30 +59,30 @@ function App() {
 
 
     async function updateTask(updatedTask) {
+        console.log("Task to update:", updatedTask);
+
         const { id, title, company, date, deadline, link, selected, statusindex } = updatedTask;
+
+        if (!id) {
+            console.error("No id provided! Cannot update task.");
+            return;
+        }
 
         const { data, error } = await supabase
             .from('tasks')
-            .update({
-                title,
-                company,
-                date,
-                deadline,
-                link,
-                selected,
-                statusindex,
-            })
+            .update({ title, company, date, deadline, link, selected, statusindex })
             .eq('id', id)
-            .select();
+            .select('*');
+
+        console.log("Update result:", data, error);
 
         if (error) {
             console.error('Error updating task:', error);
         } else {
-            setTasks((prev) =>
-                prev.map((task) => (task.id === id ? data[0] : task))
-            );
+            setTasks((prev) => prev.map((task) => (task.id === id ? data[0] || { ...task, ...updatedTask } : task)));
         }
     }
+
 
     return (
         <div className="App">
@@ -96,6 +96,4 @@ function App() {
 }
 
 export default App;
-
-
 

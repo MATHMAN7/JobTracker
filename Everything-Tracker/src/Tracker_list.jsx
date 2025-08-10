@@ -16,4 +16,3 @@ function Tracker_list({ tasks, deleteTask, updateTask }) {
 }
 
 export default Tracker_list;
-

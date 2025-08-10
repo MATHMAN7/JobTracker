@@ -41,7 +41,8 @@ function Tracker_item({ text: task, deleteTask, updateTask }) {
 
     const handleSave = () => {
         setIsEditing(false);
-        updateTask(task.id, {
+        updateTask({
+            id: task.id,
             title,
             company,
             date: date ? date.toISOString() : null,
@@ -51,6 +52,7 @@ function Tracker_item({ text: task, deleteTask, updateTask }) {
             statusindex: statusIndex,
         });
     };
+
 
     return (
         <div className="tracker-card">
@@ -79,7 +81,7 @@ function Tracker_item({ text: task, deleteTask, updateTask }) {
                 )}
 
                 <div className="remote">
-                    {["op1", "op2", "op3"].map((op, i) => (
+                    {["op1", "op2", "op3"].map((op) => (
                         <div className="remote-option" key={op}>
                             <input
                                 id={`${op}-${task.id}`}
@@ -172,4 +174,3 @@ function Tracker_item({ text: task, deleteTask, updateTask }) {
 }
 
 export default Tracker_item;
-
